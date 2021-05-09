@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<select id="typeSelector" onchange="createNew()">
+  <option value="blobs" selected="selected">Blobs</option>
+  <option value="test">Test</option>
+</select>
+
+<button type="resetButton" onclick="createNew()">New one!</button>
+<br>
+
+<canvas id="myCanvas" width="500" height="500" style="border:1px solid #000000;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<script>
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+
+var selectBox = document.getElementById("artType");
+
+
+drawOverlappingCircle = function(centered, n, angle, offset){
+
+  center_x = canvas.width/2
+  center_y = canvas.height/2
+  radius = canvas.width/2
+
+  ctx.beginPath();
+  ctx.arc(center_x, center_y, radius, 0, Math.PI * 2, true)
+  ctx.clip();
+
+  ctx.beginPath();
+  ctx.arc(center_x, center_y, radius, 0, Math.PI * 2, true)
+  ctx.stroke(); 
+
+  for(i = angle; i < Math.PI*2+angle; i += Math.PI*2/n) {
+    ctx.beginPath();
+    x = center_x + (radius + offset * center_x) * Math.cos(i)
+    y = center_y + (radius + offset * center_y) * Math.sin(i)
+    console.log(x, y, i)
+    ctx.arc(x, y, radius, 0, Math.PI * 2, true);
+    ctx.stroke(); 
+    //ctx.fill();
+  }
+  
+     
+}
+
+// START
+
+
+drawOverlappingCircle(true, 5, 0, 0.5)
+
+</script>
+
+</body>
+</html>
