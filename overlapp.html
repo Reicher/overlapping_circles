@@ -76,7 +76,7 @@ drawPattern = function(config){
   const pattern = ctx.createPattern(patternCanvas, 'repeat');
   ctx.fillStyle = pattern;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  console.log('Drew pattern ', config)
+  //console.log('Drew pattern ', config)
 }
 
 randomPattern = function(){
@@ -105,6 +105,7 @@ randomPattern = function(){
 
 evolving = function(config, direction, interval){
   for(layer = 0; layer < config.offsets.length; layer++){
+    // Offsets
     l_dir_of = direction.moving_offsets[layer]
 
     if((l_dir_of[0] && config.offsets[layer] >= l_dir_of[2]) ||
@@ -112,9 +113,20 @@ evolving = function(config, direction, interval){
        l_dir_of[0] = ! l_dir_of[0]
 
     if(l_dir_of[0])
-      config.offsets[layer] += interval * 0.0001
+      config.offsets[layer] += interval * 0.0001 * direction.moving_offset_speed[layer]
     else
-      config.offsets[layer] -= interval * 0.0001
+      config.offsets[layer] -= interval * 0.0001 * direction.moving_offset_speed[layer]
+
+    //sizes
+    l_dir_sz = direction.moving_sizes[layer]
+    if((l_dir_sz[0] && config.sizes[layer] >= l_dir_sz[2]) ||
+      (!l_dir_sz[0] && config.sizes[layer] <= l_dir_sz[1]))
+      l_dir_sz[0] = ! l_dir_sz[0]
+
+    if(l_dir_sz[0])
+      config.sizes[layer] += interval * 0.0001 * direction.moving_size_speed[layer]
+    else
+      config.sizes[layer] -= interval * 0.0001 * direction.moving_size_speed[layer]
       
   }
   ctx.fillStyle = "white";
@@ -127,15 +139,20 @@ evolving = function(config, direction, interval){
 randomDirection = function(config){
   moving_offsets = []
   moving_sizes = []
+  moving_offset_speed = []
+  moving_size_speed = []
   for(layer = 0; layer < config.offsets.length; layer++){
     moving_offsets.push([Math.random() < 0.5, 
                         Math.random() * config.offsets[layer], 
                         config.offsets[layer] + Math.random() * (1 - config.offsets[layer])])
+    moving_offset_speed.push(Math.random())
     moving_sizes.push([Math.random() < 0.5, 
                       Math.random() * config.sizes[layer], 
                       config.sizes[layer] + Math.random() * (2 - config.sizes[layer])])
+    moving_size_speed.push(Math.random())
   }
-  return {moving_offsets: moving_offsets, moving_sizes: moving_sizes}
+  return {moving_offsets: moving_offsets, moving_offset_speed: moving_offset_speed, 
+          moving_sizes: moving_sizes, moving_size_speed: moving_size_speed}
 }
 
 config = randomPattern()
@@ -144,7 +161,7 @@ drawPattern(config)
 //drawPattern(true, 10, [0.5, 0.8], [0.5, 0.8])
 //drawSingleCircle(20, [0.5])
 
-intervalMs = 25
+intervalMs = 50
 setInterval(function(){evolving(config, direction, intervalMs)}, intervalMs);
 </script>
 
