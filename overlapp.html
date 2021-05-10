@@ -43,7 +43,7 @@ drawSingleCircle = function(n, offset){
 }
 
 // Pattern 
-drawPattern = function(center, n, offset){
+drawPattern = function(center, n, offset, size, color){
   const patternCanvas = document.createElement('canvas');
   const patternContext = patternCanvas.getContext('2d');
   patternCanvas.width = 100;
@@ -66,15 +66,17 @@ drawPattern = function(center, n, offset){
       patternContext.beginPath();
       x = center_x + (radius * offset[layer] * 2) * Math.cos(i)
       y = center_y + (radius * offset[layer] * 2) * Math.sin(i)
-      patternContext.arc(x, y, radius, 0, Math.PI * 2, true);
+      patternContext.arc(x, y, radius * size[layer], 0, Math.PI * 2, true);
       patternContext.stroke()
+      //patternContext.fillStyle = color[layer]
+      //patternContext.fill()
     }   
   }
 
   const pattern = ctx.createPattern(patternCanvas, 'repeat');
   ctx.fillStyle = pattern;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  console.log('Drew pattern ', center, n, offset)
+  console.log('Drew pattern ', center, n, offset, size, color)
 }
 
 randomPattern = function(){
@@ -87,17 +89,19 @@ randomPattern = function(){
   layers = Math.floor(Math.random() * max_layers) + 1
   layer = []
   color = []
+  size = []
   for(l = 0; l < layers; l++){
     layer.push(Math.random()) 
-    //color.push('#' + Math.floor(Math.random()*16777215).toString(16))
+    color.push('#' + Math.floor(Math.random()*16777215).toString(16))
+    size.push(Math.random()*2)
   }
   layer.sort();
 
-  drawPattern(Math.random() < 0.5, n, layer)
+  drawPattern(Math.random() < 0.5, n, layer, size, color)
 }
 
 randomPattern()
-//drawPattern(true, 9, [0.5, 0.8])
+//drawPattern(true, 10, [0.5, 0.8], [0.5, 0.8])
 //drawSingleCircle(20, [0.5])
 </script>
 
