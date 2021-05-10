@@ -43,7 +43,7 @@ drawSingleCircle = function(n, offset){
 }
 
 // Pattern 
-drawPattern = function(center, n, offset, size, color){
+drawPattern = function(config){
   const patternCanvas = document.createElement('canvas');
   const patternContext = patternCanvas.getContext('2d');
   patternCanvas.width = 100;
@@ -53,20 +53,20 @@ drawPattern = function(center, n, offset, size, color){
   center_y = patternCanvas.height/2
   radius = patternCanvas.width/2
 
-  if(center){
+  if(config.center_circle){
     patternContext.beginPath();
     patternContext.arc(center_x, center_y, radius, 0, Math.PI * 2, true)
     patternContext.stroke(); 
   }
 
   angle = 0
-  for(layer=0; layer < offset.length; layer++){
+  for(layer=0; layer < config.offsets.length; layer++){
     angle += Math.PI/n
     for(i = angle; i < Math.PI*2+angle; i += Math.PI*2/n) {
       patternContext.beginPath();
-      x = center_x + (radius * offset[layer] * 2) * Math.cos(i)
-      y = center_y + (radius * offset[layer] * 2) * Math.sin(i)
-      patternContext.arc(x, y, radius * size[layer], 0, Math.PI * 2, true);
+      x = center_x + (radius * config.offsets[layer] * 2) * Math.cos(i)
+      y = center_y + (radius * config.offsets[layer] * 2) * Math.sin(i)
+      patternContext.arc(x, y, radius * config.sizes[layer], 0, Math.PI * 2, true);
       patternContext.stroke()
       //patternContext.fillStyle = color[layer]
       //patternContext.fill()
@@ -76,7 +76,7 @@ drawPattern = function(center, n, offset, size, color){
   const pattern = ctx.createPattern(patternCanvas, 'repeat');
   ctx.fillStyle = pattern;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  console.log('Drew pattern ', center, n, offset, size, color)
+  console.log('Drew pattern ', config)
 }
 
 randomPattern = function(){
@@ -87,22 +87,65 @@ randomPattern = function(){
   }while(n%2!=0)
   
   layers = Math.floor(Math.random() * max_layers) + 1
-  layer = []
+  offset = []
   color = []
   size = []
   for(l = 0; l < layers; l++){
-    layer.push(Math.random()) 
+    offset.push(Math.random()) 
     color.push('#' + Math.floor(Math.random()*16777215).toString(16))
     size.push(Math.random()*2)
   }
-  layer.sort();
-
-  drawPattern(Math.random() < 0.5, n, layer, size, color)
+  offset.sort();
+  return {center_circle: Math.random() < 0.5, 
+          per_layer: n, 
+          offsets: offset, 
+          sizes: size, 
+          colors: color}
 }
 
-randomPattern()
+evolving = function(config, direction, interval){
+  for(layer = 0; layer < config.offsets.length; layer++){
+    l_dir_of = direction.moving_offsets[layer]
+
+    if((l_dir_of[0] && config.offsets[layer] >= l_dir_of[2]) ||
+       (!l_dir_of[0] && config.offsets[layer] <= l_dir_of[1]))
+       l_dir_of[0] = ! l_dir_of[0]
+
+    if(l_dir_of[0])
+      config.offsets[layer] += interval * 0.0001
+    else
+      config.offsets[layer] -= interval * 0.0001
+      
+  }
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  drawPattern(config)
+  console.log(config.per_layer)
+}
+
+randomDirection = function(config){
+  moving_offsets = []
+  moving_sizes = []
+  for(layer = 0; layer < config.offsets.length; layer++){
+    moving_offsets.push([Math.random() < 0.5, 
+                        Math.random() * config.offsets[layer], 
+                        config.offsets[layer] + Math.random() * (1 - config.offsets[layer])])
+    moving_sizes.push([Math.random() < 0.5, 
+                      Math.random() * config.sizes[layer], 
+                      config.sizes[layer] + Math.random() * (2 - config.sizes[layer])])
+  }
+  return {moving_offsets: moving_offsets, moving_sizes: moving_sizes}
+}
+
+config = randomPattern()
+direction = randomDirection(config)
+drawPattern(config)
 //drawPattern(true, 10, [0.5, 0.8], [0.5, 0.8])
 //drawSingleCircle(20, [0.5])
+
+intervalMs = 25
+setInterval(function(){evolving(config, direction, intervalMs)}, intervalMs);
 </script>
 
 </body>
